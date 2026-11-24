@@ -1,0 +1,99 @@
+# 1. 数据源配置
+dataSources:
+  defdb:
+    # 必须加：连接池全类名
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://localhost:3306/stock_sys_db?serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: change_me
+  ds-2024:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://localhost:3306/stock_db_2024?serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: change_me
+  ds-2025:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://localhost:3306/stock_db_2025?serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: change_me
+  ds-2026:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://localhost:3306/stock_db_2026?serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: change_me
+# 2. 分片规则
+rules:
+  - !SHARDING #写要分库/分表的表
+    tables:
+      #板块表：指分库不分表
+      stock_block_rt_info:
+        # 数据节点：
+        actualDataNodes: ds-${2024..2026}.stock_block_rt_info
+        # 分库策略（按cur_time路由到哪个库）
+        databaseStrategy:
+          standard:
+            shardingColumn: cur_time
+            shardingAlgorithmName: common-db-alg
+      #国内大盘表
+      stock_market_index_info:
+        # 数据节点：
+        actualDataNodes: ds-${2024..2026}.stock_market_index_info
+        # 分库策略（按 user_id 路由到哪个库）
+        databaseStrategy:
+          standard:
+            shardingColumn: cur_time
+            shardingAlgorithmName: common-db-alg
+      #外盘盘表
+      stock_outer_index_info:
+        # 数据节点
+        actualDataNodes: ds-${2024..2026}.stock_outer_index_info
+        # 分库策略（按cur_time路由到哪个库）
+        databaseStrategy:
+          standard:
+            shardingColumn: cur_time
+            shardingAlgorithmName: common-db-alg
+      #个股流水表：按照年分录 按照月分表
+      stock_rt_info:
+        # 数据节点
+        actualDataNodes: ds-2024.stock_rt_info_${202401..202412},ds-2025.stock_rt_info_${202501..202512},ds-2026.stock_rt_info_${202601..202612}
+        # 分库策略（按cur_time路由到哪个库）
+        databaseStrategy:
+          standard:
+            shardingColumn: cur_time
+            shardingAlgorithmName: common-db-alg
+        # 分表策略（按 cur_time 路由到哪张表）
+        tableStrategy:
+          standard:
+            shardingColumn: cur_time
+            shardingAlgorithmName: common-tb-alg
+    # 分片算法
+    shardingAlgorithms:
+      # 分库算法(按年分库)：
+      common-db-alg:
+        type: CLASS_BASED
+        props:
+          strategy: STANDARD
+          algorithmClassName: com.ming.stock.sharding.Common4Db
+      # 分库算法(按月分表)：
+      common-tb-alg:
+        type: CLASS_BASED
+        props:
+          strategy: STANDARD
+          algorithmClassName: com.ming.stock.sharding.Common4Tb
+
+
+  - !BROADCAST #写每个库都要复制一份的广播表
+    tables: # 广播表规则列表
+      - stock_business
+  - !SINGLE  #不分库不分表，统一放 defdb 的普通表
+    tables:
+      # MySQL 风格
+      - "*.*" # 加载全部单表  未分片得单表
+    defaultDataSource: defdb # 默认数据源
+# 3. 全局属性
+props:
+  sql-show: true

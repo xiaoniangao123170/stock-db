@@ -1,0 +1,23 @@
+#web定义
+server:
+  port: 8092
+spring:
+  datasource:
+    # 用 ShardingSphere 自己的 Driver
+    driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
+    # 指向独立的 sharding 配置文件
+    url: jdbc:shardingsphere:classpath:sharding.yaml
+  profiles:
+    active: stock,mq,xxljob,cache #激活其他配置文件
+#配置mybatis
+mybatis:
+  type-aliases-package: com.ming.stock.pojo.entity #批量给实体类取别名 方便xml文件中直接使用别名
+  mapper-locations: classpath:mapper/*.xml         #配置加载mapper.xml文件资源
+  configuration:
+    map-underscore-to-camel-case: true             #开启驼峰映射 比如sys_user ---->SysUser
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  #通过mybatis执行的sql以日志的方式输出到终端
+#配置分页插件
+pagehelper:
+  helper-dialect: mysql  #指定分页的数据库
+  reasonable: true      #合理查询 比如总页数100页 当查询到101的时候 自动查询最后一页 当前查询-1页 默认查询第一页
+

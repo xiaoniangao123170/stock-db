@@ -1,0 +1,13 @@
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 1
+      lettuce:
+        pool:
+          max-active: 8 #连接池的最大连接数（如果使用赋值，那么就没有限制）
+          max-wait: -1ms #连接池最大阻塞等待时间
+          max-idle: 8 #连接池最大空闲连接
+          min-idle: 1 #连接池最小空闲连接
+      connect-timeout: PT10S #连接超时使劲
