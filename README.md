@@ -2,12 +2,13 @@
 
 基于 Spring Boot + ShardingSphere 的 A 股行情数据分析平台，包含行情采集、分片存储、查询展示和后台权限，不做交易。
 
-后端分为三个模块：
+仓库结构：
 
 ```text
 stock_common   公共实体、Mapper、工具类、分片算法
 stock_job      行情采集、XXL-JOB 执行器、线程池、MQ 生产
 stock_backend  行情查询、缓存、认证授权、Excel 导出
+frontend       Vue2 + ElementUI + webpack 前端
 ```
 
 技术栈：Java 21、Spring Boot 3.1.5、Spring Security、JWT、MyBatis、MySQL、ShardingSphere-JDBC、Redis、Caffeine、RabbitMQ、XXL-JOB、Nginx、EasyExcel。
@@ -88,9 +89,29 @@ getStockBlockInfoTask
 getOutMarket
 ```
 
-### 6. Nginx
+### 6. 前端
 
-前端单独部署，Nginx 托管 `dist` 并把 `/api` 转到后端：
+前端在 `frontend/`，依赖较旧，建议用 Node 16：
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+开发服务默认跑在 80，`/api` 已代理到 `http://localhost:8091`。
+
+打包：
+
+```bash
+npm run build
+```
+
+产物在 `frontend/dist`，复制到 Nginx 的 html 目录即可。
+
+### 7. Nginx
+
+前端构建后交给 Nginx，Nginx 托管 `dist` 并把 `/api` 转到后端：
 
 ```nginx
 server {
