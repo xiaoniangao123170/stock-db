@@ -91,10 +91,11 @@ getOutMarket
 
 ### 6. 前端
 
-前端在 `frontend/`，依赖较旧，建议用 Node 16：
+前端在 `frontend/`，依赖较旧（node-sass 4 + webpack 4），用 Node 14.15.2：
 
 ```bash
 cd frontend
+nvm use 14.15.2
 npm install
 npm run dev
 ```
